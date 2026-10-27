@@ -60,6 +60,10 @@
 
 #define GMT_OFFSET -14400
 #define DAYLIGHT_OFFSET 0
+// Optional: POSIX TZ rule with automatic daylight saving time. When defined, it replaces
+// GMT_OFFSET / DAYLIGHT_OFFSET (those give a fixed offset all year, so the clock is an hour off
+// for half of it). Sweden / Central Europe:
+// #define TIMEZONE_POSIX "CET-1CEST,M3.5.0,M10.5.0/3"
 
 // After Wi-Fi/NTP is up, sync spa panel clock once per boot when drift exceeds threshold (Balboa 0x21).
 // Requires correct GMT_OFFSET / DAYLIGHT_OFFSET above. Set to 0 to disable. Omitted in older config.h → off.

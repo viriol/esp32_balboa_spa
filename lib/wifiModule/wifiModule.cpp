@@ -278,7 +278,13 @@ static void applyConnectedSideEffects()
 {
   if (!wifiNtpConfigured)
   {
+#ifdef TIMEZONE_POSIX
+    // POSIX TZ rule (e.g. "CET-1CEST,M3.5.0,M10.5.0/3"): the C library applies daylight saving
+    // time automatically, so no manual GMT_OFFSET / DAYLIGHT_OFFSET change twice a year.
+    configTzTime(TIMEZONE_POSIX, "pool.ntp.org");
+#else
     configTime(gmtOffset_sec, daylightOffset_sec, "pool.ntp.org");
+#endif
     wifiNtpConfigured = true;
   }
 

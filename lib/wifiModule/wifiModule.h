@@ -33,6 +33,10 @@
 #define OTA_PROGRESS_LOG_STEP_PERCENT 10
 #endif
 
+// Optional: POSIX TZ rule with automatic daylight saving time, e.g. Sweden/Central Europe
+//   #define TIMEZONE_POSIX "CET-1CEST,M3.5.0,M10.5.0/3"
+// When defined it replaces GMT_OFFSET / DAYLIGHT_OFFSET (which stay a fixed offset all year).
+
 #ifndef GMT_OFFSET
 #warning "GMT_OFFSET not defined, please define in config.h"
 #define GMT_OFFSET -14400
