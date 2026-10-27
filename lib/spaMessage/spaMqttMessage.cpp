@@ -117,8 +117,16 @@ void publishSpaStatusData()
   PUBLISH_STATE_MAP(mister, onOffMap);
 
   publishStatusTemperature("setTemp", spaStatusData.setTemp);
-  publishStatusTemperature("lowSetTemp", spaStatusData.lowSetTemp);
-  publishStatusTemperature("highSetTemp", spaStatusData.highSetTemp);
+  // The other range's setpoint is unknown until the tub has been in that range (and a stale value
+  // from the other temperature scale can linger), so only publish plausible values.
+  if (spaStoredSetpointKnown(spaStatusData.lowSetTemp))
+  {
+    publishStatusTemperature("lowSetTemp", spaStatusData.lowSetTemp);
+  }
+  if (spaStoredSetpointKnown(spaStatusData.highSetTemp))
+  {
+    publishStatusTemperature("highSetTemp", spaStatusData.highSetTemp);
+  }
   PUBLISH_STATUS_ELEMENT(notification, "%u");
   PUBLISH_STATUS_ELEMENT(flags19, "%u");
   PUBLISH_STATE_MAP(settingsLock, lockedMap);

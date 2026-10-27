@@ -803,6 +803,15 @@ void parseFaultResponse(u_int8_t *message, int length)
   Log.verbose(F("[Mess]: Fault Log Response: %s" CR), msgToString(hexArray, length - 7).c_str());
 }
 
+bool spaStoredSetpointKnown(float value)
+{
+  if (spaStatusData.tempScale)
+  {
+    return value >= 10.0f && value <= 40.0f;
+  }
+  return value >= 50.0f && value <= 104.0f;
+}
+
 void parseFilterResponse(u_int8_t *message, int length)
 {
   spaFilterSettingsData.crc = message[message[1]];

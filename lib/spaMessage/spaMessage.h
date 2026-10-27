@@ -23,6 +23,14 @@ void spaMessageLoop();
 /** Enqueue a raw Balboa frame. Returns false if rejected or write queue is full. */
 bool sendMessageToSpa(uint8_t *data, int length);
 bool sendMessageToSpa(CircularBuffer<uint8_t, BALBOA_MESSAGE_SIZE> &data);
+/**
+ * True when a stored high/low range setpoint is a plausible value for the tub's current
+ * temperature scale (10..40 C or 50..104 F; the two ranges do not overlap). The controller only
+ * reports the setpoint of the active range, so the other one is unknown until the tub has been in
+ * that range, and a value recorded under the other scale (kept in RTC memory across restarts) or
+ * never recorded (0) must not be shown as if it were current.
+ */
+bool spaStoredSetpointKnown(float value);
 /** Queue a filter-settings read (`0x22` subcode `0x01`) to refresh `spaFilterSettingsData`. */
 void spaRequestFilterSettings();
 /** Queue a preferences read (`0x22` subcode `0x08`) to refresh `spaPreferencesData`. */
