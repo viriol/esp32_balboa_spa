@@ -2,6 +2,7 @@
 
 #include <ArduinoLog.h>
 #include <Preferences.h>
+#include <stdio.h>
 
 namespace
 {
@@ -23,6 +24,13 @@ bool plausible(const SpaFilter2Schedule &s)
     return false;
   }
   return s.durHour != 0 || s.durMinute != 0;
+}
+
+// ArduinoLog has no %u / width support, so format the text here.
+void formatSchedule(const SpaFilter2Schedule &s, char *out, size_t size)
+{
+  snprintf(out, size, "%02u:%02u for %02u:%02u", (unsigned)s.startHour, (unsigned)s.startMinute, (unsigned)s.durHour,
+           (unsigned)s.durMinute);
 }
 
 uint32_t pack(const SpaFilter2Schedule &s)
@@ -64,8 +72,9 @@ void loadOnce()
   {
     memorySchedule = s;
     memoryValid = true;
-    Log.notice(F("[Filter2]: remembered schedule %02u:%02u for %02u:%02u" CR), s.startHour, s.startMinute,
-               s.durHour, s.durMinute);
+    char text[24];
+    formatSchedule(s, text, sizeof(text));
+    Log.notice(F("[Filter2]: remembered schedule %s" CR), text);
   }
 }
 } // namespace
@@ -91,8 +100,9 @@ void spaFilter2MemoryRemember(const SpaFilter2Schedule &schedule)
     prefs.putUInt(kKey, pack(schedule));
     prefs.end();
   }
-  Log.notice(F("[Filter2]: schedule remembered %02u:%02u for %02u:%02u" CR), schedule.startHour, schedule.startMinute,
-             schedule.durHour, schedule.durMinute);
+  char text[24];
+  formatSchedule(schedule, text, sizeof(text));
+  Log.notice(F("[Filter2]: schedule remembered %s" CR), text);
 }
 
 SpaFilter2Schedule spaFilter2MemoryGet(uint8_t filter1Hour, uint8_t filter1Minute,
