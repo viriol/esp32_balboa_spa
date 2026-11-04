@@ -486,8 +486,8 @@ Arguments:
 
 Byte(s)	Name	Description/Values
 0	??	0
-1	Reminders	0=OFF, 1=OFF
-2	??	0
+1	??	Not a boolean: reads 0x85 / 0x87 on some packs and does not change when Reminders is written
+2	Reminders	0=ON, 1=OFF (Set Preference code 0x00; inverted versus older docs, checked against a BP200UX topside panel: 0 shows Reminders Yes, 1 shows No)
 3	Temperature Scale	0=1°F, 1=0.5°C
 4	Clock Mode	0=12-hour, 1=24-hour
 5	Cleanup Cycle	0=OFF, 1-8 (30 minute increments)
@@ -511,7 +511,11 @@ void parsePreferencesResponse(u_int8_t *message, int length)
 
   u_int8_t *hexArray = message + 5;
 
-  spaPreferencesData.reminders = hexArray[1];
+  // Set Preference code N is payload byte N+2 for every documented field (temperature scale
+  // 1 -> 3, clock mode 2 -> 4, cleanup cycle 3 -> 5, dolphin 4 -> 6, M8 AI 6 -> 8), so Reminders
+  // (code 0x00) is payload byte 2. Byte 1 is not the reminders flag (0x85 / 0x87 on real packs).
+  // The value is inverted: 0 = reminders on, 1 = off (see spaPreferencesRemindersEnabled).
+  spaPreferencesData.reminders = hexArray[2];
   spaPreferencesData.tempScale = hexArray[3];
   spaPreferencesData.clockMode = hexArray[4];
   spaPreferencesData.cleanupCycle = hexArray[5];
@@ -976,9 +980,27 @@ const char *spaBlowerBinaryLabel(uint8_t blower)
   return spaBlowerIsOn(blower) ? "On" : "Off";
 }
 
+String spaInitModeText(uint8_t initMode)
+{
+  // rawData holds the whole frame: 7E len ch AF type, then payload; payload byte 2 = water temp.
+  const bool tempUnknown = spaStatusData.rawDataLength > 7 && spaStatusData.rawData[7] == 0xFF;
+  if (initMode == 0x01 && spaStatusData.spaState == 0x00 && tempUnknown)
+  {
+    return String("Run pumps for temp");
+  }
+  return getMapDescription(initMode, initModeMap);
+}
+
+// Status byte 6 is a constant 0x26 on the BP200UX even though the topside panel and the
+// Balboa app show no reminder. Not a real reminder id, so treat it like "none".
+static bool spaReminderTypeIgnored(uint8_t reminderType)
+{
+  return reminderType == 0x26;
+}
+
 String spaReminderText(uint8_t reminderType, uint8_t spaState)
 {
-  if (reminderType == 0x00)
+  if (reminderType == 0x00 || spaReminderTypeIgnored(reminderType))
   {
     return String("None");
   }
@@ -999,7 +1021,7 @@ String spaReminderText(uint8_t reminderType, uint8_t spaState)
 
 String spaReminderHintText(uint8_t reminderType, uint8_t spaState)
 {
-  if (reminderType == 0x00)
+  if (reminderType == 0x00 || spaReminderTypeIgnored(reminderType))
   {
     return String("");
   }
@@ -1018,12 +1040,13 @@ String spaReminderHintText(uint8_t reminderType, uint8_t spaState)
 
 bool spaReminderIsActive(uint8_t reminderType, uint8_t spaState, uint8_t initMode)
 {
-  if (reminderType == 0x00)
+  (void)initMode; // initMode stays 1 (Priming) on the BP200UX while running, so it is not used.
+  if (reminderType == 0x00 || spaReminderTypeIgnored(reminderType))
   {
     return false;
   }
-  // Byte 6 is unreliable while the pack is booting or in priming mode.
-  if (spaState == 0x01 || initMode == 0x01)
+  // Byte 6 is unreliable while the pack is booting.
+  if (spaState == 0x01)
   {
     return false;
   }
@@ -1037,7 +1060,8 @@ bool spaReminderIsFault(uint8_t reminderType)
 
 bool spaPreferencesRemindersEnabled(uint8_t reminders)
 {
-  return (reminders & 0x01u) != 0;
+  // Inverted: the panel shows Reminders Yes for 0 and No for 1 (BP200UX).
+  return (reminders & 0x01u) == 0;
 }
 
 String spaPreferencesRemindersText(uint8_t reminders)

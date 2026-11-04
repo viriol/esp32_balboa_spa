@@ -81,7 +81,7 @@ void publishSpaStatusData()
   publishElement("rawData", "status", rawDataHex);
 
   PUBLISH_STATE_MAP(spaState, spaStateMap);
-  PUBLISH_STATE_MAP(initMode, initModeMap);
+  publishElement("initMode", "status", spaInitModeText(spaStatusData.initMode).c_str());
   publishStatusTemperature("currentTemp", spaStatusData.currentTemp);
 
   publishStatusTemperature("currentTemp", spaStatusData.currentTemp);

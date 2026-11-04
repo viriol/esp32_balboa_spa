@@ -335,7 +335,7 @@ SpaCommandResult spaSetPanelReminders(bool enabled, SpaCommandSource source)
   frame.push(kBroadcastChannel);
   frame.push(Set_Preference_Request_Type);
   frame.push(0x00);
-  frame.push(enabled ? 0x01 : 0x00);
+  frame.push(enabled ? 0x00 : 0x01); // inverted on the BP200UX: 0 = reminders on, 1 = off
   return queueFrame(frame, "set_reminders", source);
 }
 

@@ -2382,7 +2382,7 @@ void handleStatus(AsyncWebServerRequest *request)
 
   {
     const String spaStateTxt = getMapDescription(spaStatusData.spaState, spaStateMap);
-    const String initTxt = getMapDescription(spaStatusData.initMode, initModeMap);
+    const String initTxt = spaInitModeText(spaStatusData.initMode);
     const String heatModeTxt = getMapDescription(spaStatusData.heatingMode, heatingModeMap);
     const String heatStateTxt = getMapDescription(spaStatusData.heatingState, heatingStateMap);
     const uint8_t ss = spaStatusData.spaState;
@@ -3467,7 +3467,7 @@ static void fillStatusSnapshotDoc(DynamicJsonDocument &doc)
   doc["spaState"] = spaStatusData.spaState;
   doc["spaStateText"] = getMapDescription(spaStatusData.spaState, spaStateMap);
   doc["initMode"] = spaStatusData.initMode;
-  doc["initModeText"] = getMapDescription(spaStatusData.initMode, initModeMap);
+  doc["initModeText"] = spaInitModeText(spaStatusData.initMode);
   doc["heatingMode"] = spaStatusData.heatingMode;
   doc["heatingModeText"] = getMapDescription(spaStatusData.heatingMode, heatingModeMap);
   doc["heatingState"] = spaStatusData.heatingState;
@@ -4344,7 +4344,7 @@ void handleConfigFilterPost(AsyncWebServerRequest *request)
 
 void handleConfigPreferencesGet(AsyncWebServerRequest *request)
 {
-  DynamicJsonDocument doc(512);
+  DynamicJsonDocument doc(768);
   spaConfigAppendPreferencesGetJson(doc.to<JsonObject>());
   String body;
   serializeJson(doc, body);

@@ -39,6 +39,10 @@ void spaRequestPreferences();
 void spaScheduleFilterSettingsReadbackFollowup(uint8_t extraReads = 2);
 
 String getMapDescription(uint8_t element, const std::map<uint8_t, const char*>& suppliedMap);
+
+// initMode text. 0x01 is "Priming Mode" at power-on, but while the spa is running with an unknown
+// water temperature (status byte 2 = 0xFF) the panel shows "Run pumps for temp" (issue #42).
+String spaInitModeText(uint8_t initMode);
 /** True when status byte 13 blower field (TwoBit, 0–3) is non-zero. */
 inline bool spaBlowerIsOn(uint8_t blower) { return blower != 0; }
 /** MQTT/HA and portal binary label for blower status. */
@@ -47,7 +51,7 @@ const char *spaBlowerBinaryLabel(uint8_t blower);
 String spaReminderText(uint8_t reminderType, uint8_t spaState);
 /** Portal banner subtext for an active reminder (schedule hints; empty when none). */
 String spaReminderHintText(uint8_t reminderType, uint8_t spaState);
-/** Panel reminders master enable (preferences byte 1, bit 0; some packs set extra flag bits). */
+/** Panel reminders master enable (preferences payload byte 2; inverted: 0 = reminders on, 1 = off). */
 bool spaPreferencesRemindersEnabled(uint8_t reminders);
 
 /** Human-readable panel reminders preference (`spaPreferencesData.reminders`). */

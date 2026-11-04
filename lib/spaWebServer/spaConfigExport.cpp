@@ -130,6 +130,7 @@ void spaConfigAppendPreferencesGetJson(JsonObject root)
   root["remindersText"] = spaPreferencesRemindersText(spaPreferencesData.reminders);
   if (ready)
   {
+    root["rawHex"] = rawFrameHexUpper(spaPreferencesData.rawData, spaPreferencesData.rawDataLength);
     root["tempScale"] = spaPreferencesData.tempScale;
     root["clockMode"] = spaPreferencesData.clockMode;
     root["cleanupCycle"] = spaPreferencesData.cleanupCycle;
